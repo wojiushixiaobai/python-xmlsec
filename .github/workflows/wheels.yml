@@ -99,10 +99,6 @@ jobs:
       matrix:
         include: ${{ fromJson(needs.generate-wheels-matrix.outputs.include) }}
 
-    env:
-      PYXMLSEC_LIBXML2_VERSION: 2.13.5
-      PYXMLSEC_LIBXSLT_VERSION: 1.1.42
-
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -120,6 +116,7 @@ jobs:
         with:
           only: ${{ matrix.only }}
         env:
+          CIBW_BUILD_VERBOSITY: 1
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4.3.1

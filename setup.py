@@ -9,6 +9,9 @@ from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext as build_ext_orig
 
 class build_ext(build_ext_orig):
+    def info(self, message):
+        self.announce(message, level=log.INFO)
+
     def run(self):
         ext = self.ext_map['xmlsec']
         self.debug = os.environ.get('PYXMLSEC_ENABLE_DEBUG', False)
@@ -16,7 +19,19 @@ class build_ext(build_ext_orig):
         self.size_opt = os.environ.get('PYXMLSEC_OPTIMIZE_SIZE', True)
 
         if self.static or sys.platform == 'win32':
-            self.prefix_dir = Path('/host/tmp/xmlsec.build/prefix').absolute()
+            self.info('starting static build on {}'.format(sys.platform))
+            buildroot = Path('build', 'tmp')
+
+            self.prefix_dir = buildroot / 'prefix'
+            self.prefix_dir.mkdir(parents=True, exist_ok=True)
+            self.prefix_dir = self.prefix_dir.absolute()
+
+            self.build_libs_dir = buildroot / 'libs'
+            self.build_libs_dir.mkdir(exist_ok=True)
+
+            self.libs_dir = Path(os.environ.get('PYXMLSEC_LIBS_DIR', 'libs'))
+            self.libs_dir.mkdir(exist_ok=True)
+            self.info('{:20} {}'.format('Lib sources in:', self.libs_dir.absolute()))
 
             if sys.platform == 'win32':
                 self.prepare_static_build_win()

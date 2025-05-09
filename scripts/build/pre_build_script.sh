@@ -8,9 +8,8 @@ command -v yum > /dev/null 2>&1 && {
     yum install -y perl-core
 }
 
-if [ -d "/host/tmp/xmlsec.build" ]
-then
-    echo "xmlsec already available: build skipped" >&2
+if [[ -z "${PYXMLSEC_STATIC_DEPS}" ]]; then
+    echo "PYXMLSEC_STATIC_DEPS is not set, skipping static dependencies installation."
     exit 0
 fi
 

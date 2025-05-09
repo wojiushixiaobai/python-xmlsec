@@ -15,7 +15,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install build dependencies
         run: |
-          pip install --upgrade pip setuptools wheel build
+          pip install --upgrade pip setuptools wheel build packaging
           brew install libxml2 libxmlsec1 pkg-config
       - name: Build macosx_x86_64 wheel
         env:
@@ -26,6 +26,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           export PKG_CONFIG_PATH="$(brew --prefix)/opt/libxml2/lib/pkgconfig"
+          ./scripts/build/pre_build_script.sh
           python -m build
           rm -rf build/
       - name: Set environment variables

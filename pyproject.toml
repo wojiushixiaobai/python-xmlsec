@@ -44,7 +44,7 @@ known_first_party = ['xmlsec']
 known_third_party = ['lxml', 'pytest', '_pytest', 'hypothesis']
 
 [build-system]
-requires = ['setuptools>=42', 'wheel', 'setuptools_scm[toml]>=3.4', "pkgconfig>=1.5.1", "lxml>=3.8, !=4.7.0", "packaging>=21.0"]
+requires = ['setuptools>=42', 'wheel', 'setuptools_scm[toml]>=3.4', "pkgconfig>=1.5.1", "lxml>=3.8, !=4.7.0"]
 
 [tool.cibuildwheel]
 build-verbosity = 1
@@ -88,20 +88,23 @@ test-skip = "*-macosx_arm64"
 
 [tool.cibuildwheel.environment]
 PYXMLSEC_STATIC_DEPS = "true"
+PYXMLSEC_LIBXML2_VERSION = "2.13.8"
+PYXMLSEC_LIBXSLT_VERSION = "1.1.43"
+PYXMLSEC_XMLSEC1_VERSION = "1.3.7"
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64", "aarch64", "i686", "ppc64le", "s390x"]
 before-all = "./scripts/build/pre_build_script.sh"
 environment-pass = [
-    "PYXMLSEC_LIBXML2_VERSION",
-    "PYXMLSEC_LIBXSLT_VERSION",
     "PYXMLSEC_STATIC_DEPS",
+    "LD_LIBRARY_PATH",
     "GH_TOKEN"
 ]
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
 before-all = "./scripts/build/pre_build_script.sh"
+before-build = "pip install -U setuptools wheel"
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64", "x86"]

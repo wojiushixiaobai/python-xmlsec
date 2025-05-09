@@ -10,7 +10,7 @@ import tarfile
 import zipfile
 from distutils import log
 from distutils.errors import DistutilsError
-from packaging.version import Version
+from distutils.version import StrictVersion as Version
 from pathlib import Path
 from urllib.parse import urljoin
 from urllib.request import Request, urlcleanup, urlopen, urlretrieve
@@ -101,7 +101,7 @@ def latest_libxslt_release():
 
 
 def latest_xmlsec_release():
-    return latest_release_from_html('https://www.aleksey.com/xmlsec/download/', re.compile('xmlsec1-(?P<version>.*).tar.gz'))
+    return latest_release_from_html('https://www.aleksey.com/xmlsec/download', re.compile('xmlsec1-(?P<version>.*).tar.gz'))
 
 
 class CrossCompileInfo:
@@ -123,7 +123,7 @@ class DependencyBuilder:
 
         if self.static or sys.platform == 'win32':
             log.info('starting static build on {}'.format(sys.platform))
-            buildroot = Path('/host', 'tmp', 'xmlsec.build')
+            buildroot = Path('build', 'tmp')
 
             self.prefix_dir = buildroot / 'prefix'
             self.prefix_dir.mkdir(parents=True, exist_ok=True)
@@ -135,13 +135,6 @@ class DependencyBuilder:
             self.libs_dir = Path(os.environ.get('PYXMLSEC_LIBS_DIR', 'libs'))
             self.libs_dir.mkdir(exist_ok=True)
             log.info('{:20} {}'.format('Lib sources in:', self.libs_dir.absolute()))
-
-            if sys.platform == 'win32':
-                self.prepare_static_build_win()
-            elif 'linux' in sys.platform:
-                self.prepare_static_build(sys.platform)
-            elif 'darwin' in sys.platform:
-                self.prepare_static_build(sys.platform)
 
     def prepare_static_build_win(self):
         release_url = 'https://github.com/mxamin/python-xmlsec-win-binaries/releases/download/2024.04.17/'
@@ -278,18 +271,14 @@ class DependencyBuilder:
                 url = latest_xmlsec_release()
                 log.info('{:10}: {}'.format('xmlsec1', 'PYXMLSEC_XMLSEC1_VERSION unset, downloading latest from {}'.format(url)))
             else:
-                url = 'https://www.aleksey.com/xmlsec/download/xmlsec1-{}.tar.gz'.format(self.xmlsec1_version)
+                url = 'https://github.com/lsh123/xmlsec/releases/download/{}/xmlsec1-{}.tar.gz'.format(self.xmlsec1_version, self.xmlsec1_version)
                 log.info(
                     '{:10}: {}'.format(
                         'xmlsec1', 'PYXMLSEC_XMLSEC1_VERSION={}, downloading from {}'.format(self.xmlsec1_version, url)
                     )
                 )
             xmlsec1_tar = self.libs_dir / 'xmlsec1.tar.gz'
-            headers = {'User-Agent': 'https://github.com/xmlsec/python-xmlsec'}
-            request = Request(url, headers=headers)
-            with urlopen(request) as response, open(str(xmlsec1_tar), 'wb') as out_file:
-                out_file.write(response.read())
-            # urlretrieve(url, str(xmlsec1_tar))
+            urlretrieve(url, str(xmlsec1_tar))
 
         for file in (openssl_tar, zlib_tar, libiconv_tar, libxml2_tar, libxslt_tar, xmlsec1_tar):
             log.info('Unpacking {}'.format(file.name))
@@ -314,7 +303,7 @@ class DependencyBuilder:
         if build_platform == 'darwin':
             import platform
 
-            arch = self.plat_name.rsplit('-', 1)[1]
+            arch = platform.machine()
             if arch != platform.machine() and arch in ('x86_64', 'arm64'):
                 log.info('Cross-compiling for {}'.format(arch))
                 cflags.append('-arch {}'.format(arch))
@@ -450,7 +439,9 @@ class DependencyBuilder:
     def build(self):
         if sys.platform == 'win32':
             self.prepare_static_build_win()
-        else:
+        elif 'linux' in sys.platform:
+            self.prepare_static_build(sys.platform)
+        elif 'darwin' in sys.platform:
             self.prepare_static_build(sys.platform)
 
 
