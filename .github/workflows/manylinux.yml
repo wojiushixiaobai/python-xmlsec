@@ -31,6 +31,7 @@ jobs:
           PYXMLSEC_STATIC_DEPS: true
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          ./scripts/build/pre_build_script.sh && \
           /opt/python/${{ matrix.python-abi }}/bin/python -m build
       - name: Label manylinux wheel
         run: |

@@ -44,7 +44,7 @@ known_first_party = ['xmlsec']
 known_third_party = ['lxml', 'pytest', '_pytest', 'hypothesis']
 
 [build-system]
-requires = ['setuptools>=42', 'wheel', 'setuptools_scm[toml]>=3.4', "pkgconfig>=1.5.1", "lxml>=3.8, !=4.7.0"]
+requires = ['setuptools>=42', 'wheel', 'setuptools_scm[toml]>=3.4', "pkgconfig>=1.5.1", "lxml>=3.8, !=4.7.0", "packaging>=21.0"]
 
 [tool.cibuildwheel]
 build-verbosity = 1
@@ -58,6 +58,26 @@ skip = [
     "cp37-manylinux_aarch64",
     "cp36-musllinux_aarch64",
     "cp37-musllinux_aarch64",
+    "cp38-manylinux_aarch64",
+    "cp38-musllinux_aarch64",
+    "cp38-manylinux_armv7l",
+    "cp38-musllinux_armv7l",
+    "cp36-manylinux_ppc64le",
+    "cp37-manylinux_ppc64le",
+    "cp36-musllinux_ppc64le",
+    "cp37-musllinux_ppc64le",
+    "cp38-manylinux_ppc64le",
+    "cp39-manylinux_ppc64le",
+    "cp38-musllinux_ppc64le",
+    "cp39-musllinux_ppc64le",
+    "cp36-manylinux_s390x",
+    "cp37-manylinux_s390x",
+    "cp36-musllinux_s390x",
+    "cp37-musllinux_s390x",
+    "cp38-manylinux_s390x",
+    "cp39-manylinux_s390x",
+    "cp38-musllinux_s390x",
+    "cp39-musllinux_s390x",
     "cp36-macosx*",
     "cp37-macosx*",
     "cp38-macosx*",
@@ -70,7 +90,8 @@ test-skip = "*-macosx_arm64"
 PYXMLSEC_STATIC_DEPS = "true"
 
 [tool.cibuildwheel.linux]
-archs = ["x86_64", "aarch64", "i686"]
+archs = ["x86_64", "aarch64", "i686", "ppc64le", "s390x"]
+before-all = "./scripts/build/pre_build_script.sh"
 environment-pass = [
     "PYXMLSEC_LIBXML2_VERSION",
     "PYXMLSEC_LIBXSLT_VERSION",
@@ -80,11 +101,8 @@ environment-pass = [
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
-before-all = "brew install perl"
+before-all = "./scripts/build/pre_build_script.sh"
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64", "x86"]
-
-[[tool.cibuildwheel.overrides]]
-select = "*-manylinux*"
-before-all = "yum install -y perl-core"
+before-all = "python3 scripts/build/build_deps.py"
